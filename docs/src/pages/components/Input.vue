@@ -157,6 +157,11 @@
                 <md-input placeholder="My nice placeholder"></md-input>
               </md-input-container>
 
+              <md-input-container>
+                <label>Typeahead</label>
+                <md-typeahead></md-typeahead>
+              </md-input-container>
+
               <md-input-container md-inline>
                 <label>Inline field</label>
                 <md-input></md-input>
