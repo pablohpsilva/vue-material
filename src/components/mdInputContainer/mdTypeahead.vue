@@ -4,33 +4,40 @@
       class="md-input"
       :type="type"
       :value="value"
+      :name="name"
       :disabled="disabled"
       :required="required"
       :placeholder="placeholder"
       :maxlength="maxlength"
+      ref="input"
       @keydown.down="down"
       @keydown.up="up"
       @keydown.enter="hit"
       @keydown.esc="reset"
       @focus="onFocus"
-      @blur="onBlur"
-      @input="onInput">
+      @blur="onBlurCustom"
+      @input="onUpdate">
 
     <md-button class="md-icon-button Typeahead__IconButton"
+      md-disabled
       @click="callFetch">
       <md-icon>search</md-icon>
     </md-button>
 
     <ul class="md-list md-theme-default Typeahead__List"
+      md-disabled
       v-show="hasItems">
       <li class="md-list-item md-menu-item md-option Typeahead__Item"
+        md-disabled
         :class="activeClass(index)"
         v-for="(item, index) in items"
         @mousedown="hit"
         @mousemove="setActive(index)">
+        {{item.name}}
         <md-button @click.native="hit"
+          md-disabled
           @mousemove="setActive(index)">
-          {{item.name}}
+
         </md-button>
       </li>
     </ul>
@@ -44,6 +51,7 @@
   export default {
     mixins: [common],
     props: {
+      name: String,
       type: {
         type: String,
         default: 'text'
@@ -86,32 +94,32 @@
       },
 
       isEmpty() {
-        return !this.value;
+        return !this.$refs.input.value;
       },
 
       isDirty() {
-        return !!this.value;
+        return !!this.$refs.input.value;
       },
 
       hasSelected() {
-        return !!(this.selected && this.value.length);
-      },
-
-      selectedText() {
-        return this.selected ?
-          this.selected.name || this.selected.nome || this.selected.title :
-          '';
+        return !!(this.selected && this.$refs.input.value.length);
       }
+
+      // selectedText() {
+      //   return this.selected ?
+      //     this.selected.name || this.selected.nome || this.selected.title :
+      //     '';
+      // }
     },
     methods: {
       onUpdate() {
-        this.onInput();
+        const value = this.$refs.input.value;
 
-        if (!this.value) {
+        if (!value) {
           return this.reset();
         }
 
-        if (this.minChars && this.value.length < this.minChars) {
+        if (this.minChars && value.length < this.minChars) {
           return;
         }
 
@@ -120,15 +128,18 @@
         this.callFetch();
       },
 
-      onInput2() {
-        const value = this.$el.value;
+      onInput() {
+        const val = this.$refs.input.value;
 
-        this.setParentValue(value);
-        this.parentContainer.inputLength = value ? value.length : 0;
-        this.$emit('change', value);
-        this.$emit('input', value);
+        this.setParentValue(val);
+        this.parentContainer.inputLength = val ? val.length : 0;
+        this.$emit('change', val);
+        this.$emit('input', val);
+      },
 
-        // this.onUpdate()
+      setSelected(hit) {
+        this.selected = hit;
+        this.$emit('selected', hit);
       },
 
       callFetch() {
@@ -137,9 +148,11 @@
           return;
         }
 
+        // TODO: Remove this call. For testing purposes ONLY
         this.fetch().then((response) => this.handleRequest(response));
       },
 
+       // TODO: Remove this function. For testing purposes ONLY
       fetch() {
         if (!this.$http) {
           return console.warn('You need to install the `vue-resource` plugin', this);
@@ -154,14 +167,14 @@
           : this.url + this.query;
 
         const params = this.queryParam
-          ? Object.assign({ [this.queryParam]: this.query }, this.data)
+          ? Object.assign({ [this.queryParam]: this.$refs.input.value.toString() }, this.data)
           : this.data;
 
         return this.$http.get(src, { params });
       },
 
       handleRequest(response) {
-        if (this.value) {
+        if (response.data) {
           let data = response.data;
 
           data = this.prepareResponseData ?
@@ -195,9 +208,11 @@
       },
 
       hit() {
+        debugger;
         if (this.current !== -1) {
           this.onHit(this.items[this.current]);
         }
+
         this.onInput();
       },
 
@@ -221,19 +236,27 @@
       },
 
       onHit(hit) {
-        this.selected = hit;
-        this.value = this.selectedText;
+        this.$refs.input.value = hit.name || hit.nome || hit.title;
 
-        this.$emit('selected', hit);
+        this.setSelected(hit);
 
         this.reset();
       },
 
-      onBlur() {
+      onBlurCustom() {
         setTimeout(() => {
           this.parentContainer.isFocused = false;
           this.reset();
+          this.setParentValue();
         }, 1E2);
+      },
+
+      setParentValue(value) {
+        const refValue = this.$refs.input.value ?
+          this.$refs.input.value :
+          '';
+
+        this.parentContainer.setValue(value || refValue.toString());
       }
     },
     mounted() {
