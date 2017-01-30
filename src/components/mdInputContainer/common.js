@@ -8,19 +8,24 @@ export default {
   },
   watch: {
     value(value) {
+      // debugger;
       this.$el.value = value;
       this.setParentValue(value);
     },
     disabled() {
+      // debugger;
       this.setParentDisabled();
     },
     required() {
+      // debugger;
       this.setParentRequired();
     },
     placeholder() {
+      // debugger;
       this.setParentPlaceholder();
     },
     maxlength() {
+      // debugger;
       this.handleMaxLength();
     }
   },
@@ -30,6 +35,7 @@ export default {
       this.parentContainer.counterLength = this.maxlength;
     },
     setParentValue(value) {
+      // debugger;
       this.parentContainer.setValue(value || this.$el.value);
     },
     setParentDisabled() {
@@ -42,6 +48,7 @@ export default {
       this.parentContainer.hasPlaceholder = !!this.placeholder;
     },
     onFocus() {
+      // debugger;
       this.parentContainer.isFocused = true;
     },
     onBlur() {
@@ -49,6 +56,7 @@ export default {
       this.setParentValue();
     },
     onInput() {
+      // debugger;
       const value = this.$el.value;
 
       this.setParentValue();

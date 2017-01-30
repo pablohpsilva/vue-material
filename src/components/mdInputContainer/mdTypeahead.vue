@@ -2,45 +2,42 @@
   <div class="Typeahead__Wrapper">
     <input
       class="md-input"
+      ref="input"
+      :name="name"
       :type="type"
       :value="value"
-      :name="name"
       :disabled="disabled"
       :required="required"
       :placeholder="placeholder"
       :maxlength="maxlength"
-      ref="input"
-      @keydown.down="down"
-      @keydown.up="up"
-      @keydown.enter="hit"
-      @keydown.esc="reset"
       @focus="onFocus"
-      @blur="onBlurCustom"
+      @blur="onBlur"
       @input="onUpdate">
+      <!-- @keydown.up="onInput"
+      @keydown.down="onInput"> -->
 
-    <md-button class="md-icon-button Typeahead__IconButton"
-      md-disabled
-      @click="callFetch">
-      <md-icon>search</md-icon>
-    </md-button>
+      <md-button class="md-icon-button Typeahead__IconButton"
+        md-disabled>
+        <md-icon>search</md-icon>
+      </md-button>
 
-    <ul class="md-list md-theme-default Typeahead__List"
-      md-disabled
-      v-show="hasItems">
-      <li class="md-list-item md-menu-item md-option Typeahead__Item"
+      <ul class="md-list md-theme-default Typeahead__List"
         md-disabled
-        :class="activeClass(index)"
-        v-for="(item, index) in items"
-        @mousedown="hit"
-        @mousemove="setActive(index)">
-        {{item.name}}
-        <md-button @click.native="hit"
+        v-show="loading">
+        <li class="md-list-item md-menu-item md-option Typeahead__Item"
           md-disabled
+          :class="activeClass(index)"
+          v-for="(item, index) in items"
+          @click.native="hit"
+          @mousedown="hit"
           @mousemove="setActive(index)">
-
-        </md-button>
-      </li>
-    </ul>
+          {{item.name}}
+          <md-button @click.native="hit"
+            md-disabled
+            @mousemove="setActive(index)">
+          </md-button>
+        </li>
+      </ul>
   </div>
 </template>
 
@@ -77,6 +74,11 @@
       fetchFunction: {
         type: Function,
         required: false
+      },
+      limit: {
+        default() {
+          return null;
+        }
       }
     },
     data() {
@@ -84,39 +86,43 @@
         items: [],
         current: -1,
         loading: false,
-        selectFirst: false,
+        selectFirst: true,
         selected: null
       };
     },
     computed: {
       hasItems() {
+        // debugger;
         return this.items.length > 0;
       },
 
       isEmpty() {
-        return !this.$refs.input.value;
+        // debugger;
+        return !this.$el.value;
       },
 
       isDirty() {
-        return !!this.$refs.input.value;
+        // debugger;
+        return !!this.$el.value;
       },
 
       hasSelected() {
-        return !!(this.selected && this.$refs.input.value.length);
+        // debugger;
+        return !!(this.selected && this.$el.value.length);
       }
-
-      // selectedText() {
-      //   return this.selected ?
-      //     this.selected.name || this.selected.nome || this.selected.title :
-      //     '';
-      // }
     },
     methods: {
       onUpdate() {
-        const value = this.$refs.input.value;
+        // debugger;
+
+        this.$el = this.$refs.input;
+
+        this.onInputCustom();
+
+        const value = this.$el.value;
 
         if (!value) {
-          return this.reset();
+          return this.clearResultList();
         }
 
         if (this.minChars && value.length < this.minChars) {
@@ -128,8 +134,11 @@
         this.callFetch();
       },
 
-      onInput() {
-        const val = this.$refs.input.value;
+      onInputCustom() {
+        // debugger;
+        this.$el = this.$refs.input;
+
+        const val = this.$el.value;
 
         this.setParentValue(val);
         this.parentContainer.inputLength = val ? val.length : 0;
@@ -138,11 +147,13 @@
       },
 
       setSelected(hit) {
+        // debugger;
         this.selected = hit;
         this.$emit('selected', hit);
       },
 
       callFetch() {
+        // debugger;
         if (this.fetchFunction) {
           this.fetchFunction().then((response) => this.handleRequest(response));
           return;
@@ -154,6 +165,9 @@
 
        // TODO: Remove this function. For testing purposes ONLY
       fetch() {
+        // debugger;
+        this.$el = this.$refs.input;
+
         if (!this.$http) {
           return console.warn('You need to install the `vue-resource` plugin', this);
         }
@@ -166,23 +180,30 @@
           ? this.url
           : this.url + this.query;
 
+        const value = this.$el.value + '';
+
         const params = this.queryParam
-          ? Object.assign({ [this.queryParam]: this.$refs.input.value.toString() }, this.data)
+          ? Object.assign({ [this.queryParam]: value }, this.data)
           : this.data;
 
         return this.$http.get(src, { params });
       },
 
       handleRequest(response) {
+        this.$el = this.$refs.input;
+
+        // debugger;
         if (response.data) {
           let data = response.data;
 
           data = this.prepareResponseData ?
             this.prepareResponseData(data) :
             data;
+
           this.items = this.limit ?
             data.slice(0, this.limit) :
             data;
+
           this.current = -1;
           this.loading = false;
 
@@ -192,71 +213,79 @@
         }
       },
 
-      reset() {
+      clearResultList() {
+        // debugger;
         this.items = [];
         this.loading = false;
       },
 
       setActive(index) {
+        // debugger;
         this.current = index;
       },
 
       activeClass(index) {
+        // debugger;
         return {
           active: this.current === index
         };
       },
 
       hit() {
-        debugger;
+        // debugger;
+        this.$el = this.$refs.input;
+
         if (this.current !== -1) {
           this.onHit(this.items[this.current]);
         }
 
-        this.onInput();
+        this.onInputCustom();
       },
 
       up() {
+        // debugger;
         if (this.current - 1 < 0) {
           this.current = this.items.length - 1;
           return;
         }
 
         this.current -= 1;
-        this.onInput();
+        this.onInputCustom();
       },
 
       down() {
-        if (this.current + 1
-           >= this.items.length) {
+        // debugger;
+        if (this.current + 1 >= this.items.length) {
           this.current = 0;
           return;
         }
         this.current += 1;
+        this.onInputCustom();
       },
 
       onHit(hit) {
-        this.$refs.input.value = hit.name || hit.nome || hit.title;
+        debugger;
+        this.$el = this.$refs.input;
 
-        this.setSelected(hit);
+        const aux = JSON.parse(JSON.stringify(hit));
 
-        this.reset();
+        this.$el.value = aux.name || aux.nome || aux.title;
+
+        this.setSelected(aux);
+
+        // this.clearResultList();
       },
 
       onBlurCustom() {
-        setTimeout(() => {
-          this.parentContainer.isFocused = false;
-          this.reset();
-          this.setParentValue();
-        }, 1E2);
-      },
+        // debugger;
+        this.$el = this.$refs.input;
 
-      setParentValue(value) {
-        const refValue = this.$refs.input.value ?
-          this.$refs.input.value :
-          '';
-
-        this.parentContainer.setValue(value || refValue.toString());
+        if (!this.parentContainer) {
+          this.parentContainer = getClosestVueParent(this.$parent, 'md-input-container');
+        }
+        this.parentContainer.isFocused = false;
+        this.clearResultList();
+        this.setParentValue();
       }
     },
     mounted() {
@@ -267,6 +296,8 @@
 
         throw new Error('You should wrap the md-input in a md-input-container');
       }
+
+      this.$el = this.$refs.input;
 
       this.setParentDisabled();
       this.setParentRequired();
