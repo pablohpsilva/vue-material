@@ -1,5 +1,6 @@
 <template lang="html">
-  <div class="md-chips-autocomplete"
+  <div class="md-chips md-chips-autocomplete"
+    :class="[themeClass, classes]"
     @focus="onFocus"
     @blur="onBlur">
     <md-chip
@@ -12,8 +13,18 @@
 
     <md-autocomplete
       v-model="currentChip"
+      ref="autocomplete"
+      :debounce="debounce"
+      :disabled="disabled"
+      :required="required"
       :fetch="fetch"
+      :filterList="filterList"
+      :placeholder="mdInputPlaceholder"
       :id="inputId"
+      :list="list"
+      :prepareResponseData="prepareResponseData"
+      :printAttribute="printAttribute"
+      :queryParam="queryParam"
       @selected="addChip"/>
   </div>
 </template>
@@ -63,6 +74,7 @@
         type: String,
         default: 'q'
       },
+      required: Boolean,
       value: Array
     },
     mixins: [theme],
@@ -74,6 +86,12 @@
       };
     },
     computed: {
+      classes() {
+        return {
+          'md-static': this.mdStatic,
+          'md-disabled': this.disabled
+        };
+      },
       hasReachedMaxSize() {
         return this.selectedChips.length === this.mdMax;
       }
@@ -88,9 +106,14 @@
             this.currentChip = null;
             this.$emit('input', this.selectedChips);
             this.$emit('change', this.selectedChips);
-            // this.applyInputFocus();
+            this.applyAutocompleteFocus();
           }
         }
+      },
+      applyAutocompleteFocus() {
+        this.$nextTick(() => {
+          this.$refs.autocomplete.$refs.input.focus();
+        });
       },
       deleteChip(chip) {
         let index = this.selectedChips.indexOf(chip);

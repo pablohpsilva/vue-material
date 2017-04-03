@@ -146,11 +146,12 @@
           </div>
         </example-box>
 
-        <example-box card-title="Static">
+        <example-box card-title="Autocomplete">
           <div slot="demo">
             <md-input-container>
               <md-chips-autocomplete v-model="fruits"
                 :fetch="fetchAutocomplete"
+                mdInputPlaceholder="Search a Twitter user"
                 md-static>
                 <template scope="chip">{{ chip.value }}</template>
               </md-chips-autocomplete>
