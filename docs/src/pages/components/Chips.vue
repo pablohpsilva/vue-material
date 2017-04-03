@@ -148,6 +148,34 @@
 
         <example-box card-title="Static">
           <div slot="demo">
+            <md-input-container>
+              <md-chips-autocomplete v-model="fruits"
+                :fetch="fetchAutocomplete"
+                md-static>
+                <template scope="chip">{{ chip.value }}</template>
+              </md-chips-autocomplete>
+            </md-input-container>
+          </div>
+
+          <div slot="code">
+            <code-block lang="xml">
+              &lt;md-chips-autocomplete v-model=&quot;fruits&quot; md-static&gt;
+                &lt;template scope=&quot;chip&quot;&gt;{{ '{{ chip.value }\}' }}&lt;/template&gt;
+              &lt;/md-chips-autocomplete&gt;
+            </code-block>
+
+            <code-block lang="javascript">
+              export default {
+                data: () => ({
+                  fruits: ['Orange', 'Apple', 'Pineapple']
+                })
+              };
+            </code-block>
+          </div>
+        </example-box>
+
+        <example-box card-title="Static">
+          <div slot="demo">
             <md-chips v-model="fruits" md-static>
               <template scope="chip">{{ chip.value }}</template>
             </md-chips>
@@ -234,6 +262,23 @@
       fruits: ['Orange', 'Apple', 'Pineapple'],
       contacts: ['Marcos Moura'],
       cities: ['Amsterdam', 'London', 'Tokio']
-    })
+    }),
+    methods: {
+      fetchAutocomplete(param) {
+        const myInit = {
+          method: 'GET',
+          headers: new Headers(),
+          mode: 'cors',
+          cache: 'default'
+        };
+        const url = 'https://typeahead-js-twitter-api-proxy.herokuapp.com/demo/search';
+        const queryParam = Object.keys(param)[0];
+        const queryValue = param[queryParam];
+        const queryUrl = `${url}?${queryParam}=${queryValue}`;
+
+        return window.fetch(queryUrl, myInit)
+          .then((res) => res.json());
+      }
+    }
   };
 </script>
