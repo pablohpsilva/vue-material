@@ -17,11 +17,11 @@
       :debounce="debounce"
       :disabled="disabled"
       :required="required"
-      :fetch="fetch"
+      :list="list"
       :filterList="filterList"
       :placeholder="mdInputPlaceholder"
       :id="inputId"
-      :list="list"
+      :fetch="fetch"
       :prepareResponseData="prepareResponseData"
       :printAttribute="printAttribute"
       :queryParam="queryParam"
@@ -38,7 +38,7 @@
     props: {
       debounce: {
         type: Number,
-        default: 1E3
+        default: 8E2
       },
       disabled: Boolean,
       fetch: Function,
@@ -148,24 +148,17 @@
         this.setParentValue();
       },
       verifyProps() {
-        let errorMessage = '';
-
         if (!this.parentContainer) {
-          errorMessage = 'You should wrap the md-input in a md-input-container';
+          return this.throwErrorDestroy('You should wrap the md-input in a md-input-container');
+        } else if (!this.listIsEmpty && this.filterList) {
+          return this.throwErrorDestroy('You should use a `filterList` function prop with the `list` prop');
+        } else if (!this.fetch) {
+          return this.throwErrorDestroy('You should use a `fetch` function prop');
         }
-
-        // if (!this.listIsEmpty && !this.filterList) {
-        //   errorMessage = 'You should use a `filterList` function prop with the `list` prop';
-        // }
-
-        if (!this.fetch) {
-          errorMessage = 'You should use a `fetch` function prop';
-        }
-
-        if (errorMessage) {
-          this.$destroy();
-          throw new Error(errorMessage);
-        }
+      },
+      throwErrorDestroy(errorMessage) {
+        this.$destroy();
+        throw new Error(errorMessage);
       }
     },
     mounted() {

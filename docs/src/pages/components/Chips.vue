@@ -146,13 +146,20 @@
           </div>
         </example-box>
 
-        <example-box card-title="Autocomplete">
+        <example-box card-title="Autocomplete (with fetch)">
           <div slot="demo">
             <md-input-container>
-              <md-chips-autocomplete v-model="fruits"
+              <md-chips-autocomplete v-model="twitterUsers"
                 :fetch="fetchAutocomplete"
-                mdInputPlaceholder="Search a Twitter user"
-                md-static>
+                mdInputPlaceholder="Search a Twitter user">
+                <template scope="chip">{{ chip.value }}</template>
+              </md-chips-autocomplete>
+            </md-input-container>
+
+            <md-input-container>
+              <md-chips-autocomplete v-model="twitterUsers"
+                :list="fruits"
+                mdInputPlaceholder="Search a Twitter user">
                 <template scope="chip">{{ chip.value }}</template>
               </md-chips-autocomplete>
             </md-input-container>
@@ -160,7 +167,9 @@
 
           <div slot="code">
             <code-block lang="xml">
-              &lt;md-chips-autocomplete v-model=&quot;fruits&quot; md-static&gt;
+              &lt;md-chips-autocomplete v-model=&quot;twitterUsers&quot;
+                :fetch=&quot;fetchAutocomplete&quot;
+                mdInputPlaceholder=&quot;Search a Twitter user&quot;&gt;
                 &lt;template scope=&quot;chip&quot;&gt;{{ '{{ chip.value }\}' }}&lt;/template&gt;
               &lt;/md-chips-autocomplete&gt;
             </code-block>
@@ -168,8 +177,20 @@
             <code-block lang="javascript">
               export default {
                 data: () => ({
-                  fruits: ['Orange', 'Apple', 'Pineapple']
-                })
+                  twitterUsers: [],
+                }),
+                methods: {
+                  fetchFunction(param) {
+                    // param = { queryParam: query }
+
+                    // &apos;fetchAutocomplete&apos; should return a Promise.
+
+                    // md-autocomplete will call fetchAutocomplete and pass
+                    // &apos;param&apos; as an argument.
+                    // the &apos;param&apos; is composed by a query param and
+                    // a query.
+                  },
+                },
               };
             </code-block>
           </div>
@@ -262,7 +283,8 @@
     data: () => ({
       fruits: ['Orange', 'Apple', 'Pineapple'],
       contacts: ['Marcos Moura'],
-      cities: ['Amsterdam', 'London', 'Tokio']
+      cities: ['Amsterdam', 'London', 'Tokio'],
+      twitterUsers: []
     }),
     methods: {
       fetchAutocomplete(param) {
