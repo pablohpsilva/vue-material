@@ -48,7 +48,8 @@
         type: Number,
         default: Infinity
       },
-      mdStatic: Boolean
+      mdStatic: Boolean,
+      value: Array
     },
     mixins: [theme, autocompleteCommon],
     data() {
