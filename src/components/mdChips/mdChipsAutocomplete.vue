@@ -30,25 +30,13 @@
 </template>
 
 <script>
+  import autocompleteCommon from '../../core/utils/autocomplete-commons';
+  import getClosestVueParent from '../../core/utils/getClosestVueParent';
   import theme from '../../core/components/mdTheme/mixin';
   import uniqueId from '../../core/utils/uniqueId';
-  import getClosestVueParent from '../../core/utils/getClosestVueParent';
 
   export default {
     props: {
-      debounce: {
-        type: Number,
-        default: 8E2
-      },
-      disabled: Boolean,
-      fetch: Function,
-      filterList: Function,
-      list: {
-        type: Array,
-        default() {
-          return [];
-        }
-      },
       mdInputId: String,
       mdInputName: String,
       mdInputPlaceholder: String,
@@ -60,24 +48,9 @@
         type: Number,
         default: Infinity
       },
-      mdStatic: Boolean,
-      minChars: {
-        type: Number,
-        default: 1
-      },
-      prepareResponseData: Function,
-      printAttribute: {
-        type: String,
-        default: 'name'
-      },
-      queryParam: {
-        type: String,
-        default: 'q'
-      },
-      required: Boolean,
-      value: Array
+      mdStatic: Boolean
     },
-    mixins: [theme],
+    mixins: [theme, autocompleteCommon],
     data() {
       return {
         currentChip: '',
