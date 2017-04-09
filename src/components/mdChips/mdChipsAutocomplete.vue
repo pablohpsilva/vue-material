@@ -30,7 +30,7 @@
 </template>
 
 <script>
-  import autocompleteCommon from '../../core/utils/autocomplete-commons';
+  import autocompleteCommon from '../../core/utils/autocomplete-common';
   import getClosestVueParent from '../../core/utils/getClosestVueParent';
   import theme from '../../core/components/mdTheme/mixin';
   import uniqueId from '../../core/utils/uniqueId';
