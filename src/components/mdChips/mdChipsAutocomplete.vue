@@ -76,7 +76,7 @@
       addChip(selected = null) {
         if (!this.hasReachedMaxSize) {
           const value = selected ||
-            ({ [this.printAttribute]: this.currentChip.trim() });
+            { [this.printAttribute]: this.currentChip.trim() };
 
           if (this.selectedChips.indexOf(value) < 0) {
             this.selectedChips.push(value);
