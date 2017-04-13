@@ -8,7 +8,8 @@
       :md-deletable="!mdStatic"
       :disabled="disabled"
       @delete="deleteChip(chip)">
-      <slot :value="chip"></slot>
+      <span v-text="chip[printAttribute]"></span>
+      <!--<slot :value="chip"></slot>-->
     </md-chip>
 
     <md-autocomplete
@@ -25,6 +26,7 @@
       :prepareResponseData="prepareResponseData"
       :printAttribute="printAttribute"
       :queryParam="queryParam"
+      @keydown.enter.stop="addChip"
       @selected="addChip"/>
   </div>
 </template>
@@ -55,7 +57,7 @@
     data() {
       return {
         currentChip: '',
-        inputId: this.mdInputId || 'chips-' + uniqueId(),
+        inputId: this.mdInputId || `chips-${uniqueId()}`,
         selectedChips: this.value
       };
     },
@@ -67,13 +69,14 @@
         };
       },
       hasReachedMaxSize() {
-        return this.selectedChips.length === this.mdMax;
+        return this.selectedChips && this.selectedChips.length === this.mdMax;
       }
     },
     methods: {
-      addChip() {
-        if (this.currentChip && !this.hasReachedMaxSize) {
-          const value = this.currentChip.trim();
+      addChip(selected = null) {
+        if (!this.hasReachedMaxSize) {
+          const value = selected ||
+            ({ [this.printAttribute]: this.currentChip.trim() });
 
           if (this.selectedChips.indexOf(value) < 0) {
             this.selectedChips.push(value);
@@ -86,7 +89,7 @@
       },
       applyAutocompleteFocus() {
         this.$nextTick(() => {
-          this.$refs.autocomplete.$refs.input.focus();
+          this.$refs.autocomplete.onFocus();
         });
       },
       deleteChip(chip) {
@@ -97,19 +100,20 @@
         }
 
         this.$emit('change', this.selectedChips);
-        this.applyInputFocus();
+        this.applyAutocompleteFocus();
       },
       deleteLastChip() {
         if (!this.currentChip) {
           this.selectedChips.pop();
           this.$emit('change', this.selectedChips);
-          this.applyInputFocus();
+          this.applyAutocompleteFocus();
         }
       },
       onFocus() {
         if (this.parentContainer) {
           this.parentContainer.isFocused = true;
         }
+        this.$refs.autocomplete.onFocus();
       },
       onInput() {
         this.updateValues();
@@ -119,7 +123,7 @@
       },
       onBlur() {
         this.parentContainer.isFocused = false;
-        this.setParentValue();
+        // this.setParentValue();
       },
       verifyProps() {
         if (!this.parentContainer) {
