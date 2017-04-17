@@ -46,6 +46,94 @@
         this.setParentValue(value);
         this.updateValues(value);
       },
+      getPosition(vertical, horizontal) {
+        let menuTriggerRect = this.menuTrigger.getBoundingClientRect();
+
+        let top = vertical === 'top'
+          ? menuTriggerRect.top + menuTriggerRect.height - this.menuContent.offsetHeight
+          : menuTriggerRect.top;
+
+        let left = horizontal === 'left'
+          ? menuTriggerRect.left - this.menuContent.offsetWidth + menuTriggerRect.width
+          : menuTriggerRect.left;
+
+        top += parseInt(this.mdOffsetY, 10);
+        left += parseInt(this.mdOffsetX, 10);
+
+        if (this.mdAlignTrigger) {
+          if (vertical === 'top') {
+            top -= menuTriggerRect.height + 11;
+          } else {
+            top += menuTriggerRect.height + 11;
+          }
+        }
+
+        return { top, left };
+      },
+      calculateMenuContentPos() {
+        let position;
+
+        if (!this.mdDirection) {
+          position = this.getPosition('bottom', 'right');
+        } else {
+          position = this.getPosition.apply(this, this.mdDirection.trim().split(' '));
+        }
+
+        position = getInViewPosition(this.menuContent, position);
+
+        this.menuContent.style.top = position.top + window.pageYOffset + 'px';
+        this.menuContent.style.left = position.left + window.pageXOffset + 'px';
+      },
+      recalculateOnResize() {
+        window.requestAnimationFrame(this.calculateMenuContentPos);
+      },
+      open() {
+        if (document.body.contains(this.menuContent)) {
+          document.body.removeChild(this.menuContent);
+        }
+
+        document.body.appendChild(this.menuContent);
+        document.body.appendChild(this.backdropElement);
+        window.addEventListener('resize', this.recalculateOnResize);
+
+        this.calculateMenuContentPos();
+
+        getComputedStyle(this.menuContent).top;
+        this.menuContent.classList.add('md-active');
+        this.menuContent.focus();
+        this.active = true;
+        this.$emit('open');
+      },
+      close() {
+        let close = (event) => {
+          if (this.menuContent && event.target === this.menuContent) {
+            let activeRipple = this.menuContent.querySelector('.md-ripple.md-active');
+
+            this.menuContent.removeEventListener(transitionEndEventName, close);
+            this.menuTrigger.focus();
+            this.active = false;
+
+            if (activeRipple) {
+              activeRipple.classList.remove('md-active');
+            }
+
+            document.body.removeChild(this.menuContent);
+            document.body.removeChild(this.backdropElement);
+            window.removeEventListener('resize', this.recalculateOnResize);
+          }
+        };
+
+        this.menuContent.addEventListener(transitionEndEventName, close);
+        this.menuContent.classList.remove('md-active');
+        this.$emit('close');
+      },
+      toggle() {
+        if (this.active) {
+          this.close();
+        } else {
+          this.open();
+        }
+      }
     },
     mounted() {
       this.$nextTick(() => {
