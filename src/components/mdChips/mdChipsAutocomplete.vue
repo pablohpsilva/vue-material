@@ -58,7 +58,8 @@
       return {
         currentChip: '',
         inputId: this.mdInputId || `chips-${uniqueId()}`,
-        selectedChips: this.value
+        selectedChips: this.value,
+        parentContainer: null,
       };
     },
     computed: {
